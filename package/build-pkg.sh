@@ -10,14 +10,14 @@ OUTPUTDIR=$CURR_DIR
 SMARTDNS_WEBUI_URL="https://github.com/pymumu/smartdns-webui/archive/refs/heads/main.zip"
 SMARTDNS_WEBUI_SOURCE="$WORKDIR/smartdns-webui"
 SMARTDNS_STATIC_DIR="$WORKDIR/smartdns-static"
-SMARTDNS_WITH_LIBS=0
+SMARTDNS_WITH_LIBS=1
 MAKE_NJOBS=1
 
 export CC
 export STRIP
 export WORKDIR
 
-WITH_UI=0
+WITH_UI=1
 
 showhelp()
 {
