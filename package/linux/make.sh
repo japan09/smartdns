@@ -5,7 +5,7 @@ VER="`date +"1.%Y.%m.%d-%H%M"`"
 SMARTDNS_DIR=$CURR_DIR/../../
 SMARTDNS_CP=$SMARTDNS_DIR/package/copy-smartdns.sh
 SMARTDNS_BIN=$SMARTDNS_DIR/src/smartdns
-IS_BUILD_SMARTDNS_UI=0
+IS_BUILD_SMARTDNS_UI=1
 
 showhelp()
 {
