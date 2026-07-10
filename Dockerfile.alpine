@@ -1,17 +1,39 @@
 FROM --platform=$TARGETPLATFORM alpine:3.23 as smartdns-builder
 # alpine 3.23 自带openssl 3.5.4
+ARG TARGETARCH
 LABEL previous-stage=smartdns
 # 添加标签，镜像生成后可使用 docker rmi `docker images --filter label=previous-stage=smartdns -q` 删除中间层
 COPY . /smartdns/
-RUN apk update && \
-    apk add make gcc build-base linux-headers openssl-dev openssl-libs-static && \
+RUN mkdir -p ~/.cargo && \
+    rm -rf /var/cache/apk/* && \
+    apk update && \
+    apk add make gcc build-base linux-headers openssl-dev openssl-libs-static rust cargo && \
+    apk add --no-cache clang clang-dev llvm llvm-dev llvm-static && \
     chmod -R 0755 /smartdns && \
     cd /smartdns && \
-    sh ./package/build-pkg.sh --platform linux --arch `uname -m` --static && \
-    strip /smartdns/src/smartdns && \
+#     export RUSTFLAGS="-C target-cpu=armv7-a -C target-feature=-neon" && \
+    # 根据目标平台动态设置 Rust Target 和编译参数
+    # armv7 对应 armv7-unknown-linux-musleabihf
+    # arm64 对应 aarch64-unknown-linux-musl
+    # amd64 对应 x86_64-unknown-linux-musl
+    export RUST_TARGET=$(case "$TARGETPLATFORM" in \
+        "linux/arm/v7") echo "armv7-unknown-linux-musleabihf" ;; \
+        "linux/arm/v6") echo "arm-unknown-linux-musleabihf" ;; \
+        "linux/arm64") echo "aarch64-unknown-linux-musl" ;; \
+        "linux/amd64") echo "x86_64-unknown-linux-musl" ;; \
+        *) echo "Unsupported platform"; exit 1 ;; \
+    esac) && \
+    # 添加对应的 Rust target
+    rustup target add $RUST_TARGET && \
+    export CARGO_HTTP_TIMEOUT=300 && \
+    sh ./package/build-pkg.sh --platform linux --arch ${TARGETARCH} --static && \
+#     strip /smartdns/src/smartdns && \
+    # 注意：编译出的二进制路径可能包含 target triple，需根据 $RUST_TARGET 动态获取
+    strip /smartdns/target/$RUST_TARGET/release-optmize-size/smartdns && \
     mkdir -p /release/usr/sbin/ && \
     mkdir -p /release/etc/smartdns/ && \
-    cp /smartdns/src/smartdns /release/usr/sbin/
+#     cp /smartdns/src/smartdns /release/usr/sbin/
+    cp /smartdns/target/$RUST_TARGET/release-optmize-size/smartdns /release/usr/sbin/
 
 FROM --platform=$TARGETPLATFORM alpine:3.23
 ENV TZ="Asia/Shanghai"
