@@ -16,7 +16,7 @@ permissions:
 jobs:
   check_updates:
     name: Check for updates (Schedule only)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04-arm
     outputs:
       should_run: ${{ steps.decision.outputs.should_run }}
     steps:
@@ -52,7 +52,7 @@ jobs:
     name: Build Cross-Compiled Artifacts
     needs: check_updates
     if: needs.check_updates.outputs.should_run == 'true'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04-arm
 
     steps:
       # 1. Checkout the repository
