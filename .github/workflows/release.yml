@@ -7,51 +7,51 @@ on:
   release:
     types: [published]
   schedule:
-    - cron: '0 18 * * *' # Daily at 18:00 UTC (02:00 AM Beijing Time)
+    - cron: '0 02 * * *' # Daily at 18:00 UTC (02:00 AM Beijing Time)
   workflow_dispatch: # Allows manual trigger from GitHub UI for testing
 
 permissions:
   contents: write
 
 jobs:
-  check_updates:
-    name: Check for updates (Schedule only)
-    runs-on: ubuntu-20.04-arm
-    outputs:
-      should_run: ${{ steps.decision.outputs.should_run }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
-
-      - name: Make decision
-        id: decision
-        run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            # Fetch the nightly tag from origin
-            git fetch origin refs/tags/nightly:refs/tags/nightly || true
-            if git rev-parse refs/tags/nightly >/dev/null 2>&1; then
-              NIGHTLY_SHA=$(git rev-parse refs/tags/nightly)
-              CURRENT_SHA=$(git rev-parse HEAD)
-              if [ "$NIGHTLY_SHA" = "$CURRENT_SHA" ]; then
-                echo "Current commit ($CURRENT_SHA) is the same as the existing nightly tag. Skipping scheduled build."
-                echo "should_run=false" >> $GITHUB_OUTPUT
-              else
-                echo "New commits detected since the last nightly tag. Running scheduled build."
-                echo "should_run=true" >> $GITHUB_OUTPUT
-              fi
-            else
-              echo "No existing nightly tag found. Running build."
-              echo "should_run=true" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "Not a scheduled run (event: ${{ github.event_name }}). Running build."
-            echo "should_run=true" >> $GITHUB_OUTPUT
-          fi
-
+#  check_updates:
+#    name: Check for updates (Schedule only)
+#    runs-on: ubuntu-20.04-arm
+#    outputs:
+#      should_run: ${{ steps.decision.outputs.should_run }}
+#    steps:
+#      - name: Checkout Code
+#        uses: actions/checkout@v6
+#
+#     - name: Make decision
+#        id: decision
+#        run: |
+#          if [ "${{ github.event_name }}" = "schedule" ]; then
+#            # Fetch the nightly tag from origin
+#            git fetch origin refs/tags/nightly:refs/tags/nightly || true
+#            if git rev-parse refs/tags/nightly >/dev/null 2>&1; then
+#              NIGHTLY_SHA=$(git rev-parse refs/tags/nightly)
+#              CURRENT_SHA=$(git rev-parse HEAD)
+#              if [ "$NIGHTLY_SHA" = "$CURRENT_SHA" ]; then
+#                echo "Current commit ($CURRENT_SHA) is the same as the existing nightly tag. Skipping scheduled build."
+#                echo "should_run=false" >> $GITHUB_OUTPUT
+#              else
+#                echo "New commits detected since the last nightly tag. Running scheduled build."
+#                echo "should_run=true" >> $GITHUB_OUTPUT
+#              fi
+#            else
+#              echo "No existing nightly tag found. Running build."
+#              echo "should_run=true" >> $GITHUB_OUTPUT
+#            fi
+#          else
+#            echo "Not a scheduled run (event: ${{ github.event_name }}). Running build."
+#            echo "should_run=true" >> $GITHUB_OUTPUT
+#          fi
+#
   build-release:
     name: Build Cross-Compiled Artifacts
-    needs: check_updates
-    if: needs.check_updates.outputs.should_run == 'true'
+#    needs: check_updates
+#    if: needs.check_updates.outputs.should_run == 'true'
     runs-on: ubuntu-20.04-arm
 
     steps:
