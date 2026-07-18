@@ -1,13 +1,19 @@
 name: Docker Image CI with ui
 on:
   workflow_dispatch:
+    inputs:
+      target_version:
+        description: '输入固定的版本号'
+        required: true
+        default: 'v1.0.0'
   push:
     branches:
       - master
       
 jobs:
   get-version:
-    name: get latest version number
+#    name: get latest version number
+    name: set version from input
     runs-on: ubuntu-20.04-arm
     outputs:
       CUR_VERSION: ${{steps.get-version.outputs.CUR_VERSION}}
@@ -20,16 +26,18 @@ jobs:
     - name: get version
       id: get-version
       run: |
-          #获取当前版本号
-          pre_version=$(cat version_control/VERSION | grep "PREFEX" | sed 's/PREFEX=\(.*\)/\1/')
-          cur_version=$(cat version_control/VERSION | grep "CUR_VERS" | sed 's/CUR_VERS=\(.*\)/\1/')
-          echo "CUR_VERSION=$pre_version$cur_version" >> $GITHUB_OUTPUT
+          echo "CUR_VERSION=${{github.event.inputs.target_version}}" >> $GITHUB_OUTPUT
+#          #获取当前版本号
+#          pre_version=$(cat version_control/VERSION | grep "PREFEX" | sed 's/PREFEX=\(.*\)/\1/')
+#          cur_version=$(cat version_control/VERSION | grep "CUR_VERS" | sed 's/CUR_VERS=\(.*\)/\1/')
+#          echo "CUR_VERSION=$pre_version$cur_version" >> $GITHUB_OUTPUT
 
   build: 
     needs: get-version
     strategy:
       matrix:
-        goarch: [x86_64, aarch64, armv7]
+        # goarch: [x86_64, aarch64, armv7]
+        goarch: [armv7]
         # bindgen 似乎不支持armv7和powerpc64le
       fail-fast: false
     runs-on: ubuntu-20.04-arm
