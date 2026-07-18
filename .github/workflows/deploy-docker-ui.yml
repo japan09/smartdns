@@ -5,7 +5,7 @@ on:
       target_version:
         description: '输入固定的版本号'
         required: true
-        default: 'v1.0.0'
+        default: '7.2026.v48.2.6_with_ui'
   push:
     branches:
       - master
